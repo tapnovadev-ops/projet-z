@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id             Int         @id @default(autoincrement())
+  name           String
+  description    String?
+  barcode        String?     @unique
+  purchasePrice  Float
+  salePrice      Float
+  stockQuantity  Int         @default(0)
+  minStockAlert  Int         @default(5)
+
+  categoryId     Int
+  category       Category    @relation(fields: [categoryId], references: [id])
+
+  saleItems      SaleItem[]
+  purchaseItems  PurchaseItem[]
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  address   String?
+
+  sales     Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  companyName String?
+
+  purchases   Purchase[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Sale {
+  id              Int        @id @default(autoincrement())
+  referenceNumber String     @unique
+  totalAmount     Float
+  paidAmount      Float
+  remainingAmount Float
+  paymentMethod   String
+  status          String
+
+  customerId      Int
+  customer        Customer   @relation(fields: [customerId], references: [id])
+
+  items           SaleItem[]
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model SaleItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+
+  saleId     Int
+  sale       Sale     @relation(fields: [saleId], references: [id])
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id              Int           @id @default(autoincrement())
+  referenceNumber String        @unique
+  totalAmount     Float
+  paidAmount      Float
+  remainingAmount Float
+  status          String
+
+  supplierId      Int
+  supplier        Supplier      @relation(fields: [supplierId], references: [id])
+
+  items           PurchaseItem[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+
+  purchaseId Int
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model DailyAnalysis {
+  id                 Int      @id @default(autoincrement())
+  date               DateTime @unique
+  totalSales         Float
+  totalPurchases     Float
+  totalProfit        Float
+  totalProductsSold  Int
+
+  createdAt          DateTime @default(now())
+}
